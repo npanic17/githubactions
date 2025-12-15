@@ -1,0 +1,42 @@
+name: Weekly Development Tag
+
+# 1. TRIGGER: Podesi da se pokreće svakog ponedeljka u 03:00 UTC
+on:
+  schedule:
+    # cron sintaksa: Mjesec Sat Dan-u-mjesecu Mjesec Dan-u-sedmici
+    # 0 3 * * 1 = u 3:00 ujutru, svaki ponedeljak (1 je ponedeljak)
+    - cron: '0 3 * * 1' 
+  
+  # Opciono: Dozvoli ručno pokretanje za testiranje
+  workflow_dispatch: 
+
+permissions:
+  contents: write # Dozvola za kreiranje taga
+
+jobs:
+  tagging_job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          # Ovo je neophodno za Git komande
+          fetch-depth: 0 
+
+      - name: Calculate new Tag Name
+        id: tag_vars
+        run: |
+          # Generiše datum u formatu: YYYY_MM_DD
+          DATE_PART=$(date +'%Y_%m_%d')
+          NEW_TAG="weekly_${DATE_PART}"
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+          
+      - name: Create Tag
+        # Kreirajte anotirani tag.
+        run: |
+          git tag -a $NEW_TAG -m "Nedeljni interni build za $NEW_TAG"
+
+      - name: Push new Tag to GitHub
+        # Šaljite tagove nazad na GitHub
+        run: git push origin $NEW_TAG
