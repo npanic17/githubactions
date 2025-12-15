@@ -24,27 +24,24 @@ jobs:
           # Neophodno za Git komande koje se oslanjaju na istoriju/grane
           fetch-depth: 0 
 
-      # NOVI KORAK ZA REŠAVANJE 'Committer identity unknown'
+      # KORAK ZA REŠAVANJE 'Committer identity unknown'
       - name: Configure Git Identity
         run: |
-          # Postavlja identitet tager-a na zvaničnog GitHub bota
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
 
-      - name: Calculate new Tag Name
+      - name: Calculate new Tag Name (sa satom i minutima)
         id: tag_vars
         run: |
-          # Generiše datum u željenom formatu: YYYY_MM_DD
-          DATE_PART=$(date +'%Y_%m_%d')
-          NEW_TAG="weekly_${DATE_PART}"
+          # Generiše datum i vreme u formatu: YYYY_MM_DD_HHMM (npr. 2025_12_15_2330)
+          DATE_TIME_PART=$(date +'%Y_%m_%d_%H%M')
+          NEW_TAG="weekly_${DATE_TIME_PART}"
           # Postavlja varijablu za korišćenje u sledećim koracima
           echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
           
       - name: Create Annotated Tag
-        # Koristi se varijabla $NEW_TAG iz prethodnog koraka
         run: |
           git tag -a $NEW_TAG -m "Nedeljni interni build za $NEW_TAG"
 
       - name: Push new Tag to GitHub
-        # Šalje samo novokreirani tag na remote
         run: git push origin $NEW_TAG
